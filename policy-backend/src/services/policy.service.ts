@@ -52,7 +52,7 @@ interface CreatePolicyInput {
 export const createPolicy = async (
   tenantId: string,
   userId: string,
-  policyData: CreatePolicyInput
+  policyData: CreatePolicyInput,
 ) => {
   const tenantObjectId = new mongoose.Types.ObjectId(tenantId);
 
@@ -64,7 +64,7 @@ export const createPolicy = async (
 
   if (existingPolicy) {
     throw new Error(
-      `Policy number ${policyData.policyNumber} already exists for this tenant`
+      `Policy number ${policyData.policyNumber} already exists for this tenant`,
     );
   }
 
@@ -83,7 +83,7 @@ export const createPolicy = async (
         type: "individual",
       },
     },
-    { upsert: true, new: true, lean: false }
+    { upsert: true, new: true, lean: false },
   );
 
   // Determine policy status based on expiry date
@@ -106,14 +106,13 @@ export const createPolicy = async (
     expiryDate: policyData.expiryDate,
     vehicleDetails: policyData.vehicleDetails
       ? {
-          registrationNumber:
-            policyData.vehicleDetails.registrationNumber,
+          registrationNumber: policyData.vehicleDetails.registrationNumber,
           rto: policyData.vehicleDetails.rtoId
             ? new mongoose.Types.ObjectId(policyData.vehicleDetails.rtoId)
             : undefined,
           vehicleType: policyData.vehicleDetails.vehicleTypeId
             ? new mongoose.Types.ObjectId(
-                policyData.vehicleDetails.vehicleTypeId
+                policyData.vehicleDetails.vehicleTypeId,
               )
             : undefined,
           make: policyData.vehicleDetails.make,

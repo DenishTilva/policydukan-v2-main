@@ -32,7 +32,7 @@ export const updateUserProfile = async (
   data: {
     name?: string;
     mobile?: string;
-  }
+  },
 ) => {
   const updateData: any = {};
 
@@ -46,7 +46,7 @@ export const updateUserProfile = async (
       tenantId: new mongoose.Types.ObjectId(tenantId),
     },
     updateData,
-    { new: true, lean: true }
+    { new: true, lean: true },
   );
 
   if (!user) throw new Error("User not found");

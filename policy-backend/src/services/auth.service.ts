@@ -1,8 +1,8 @@
-import {Tenant} from "../models/platform/Tenant";
-import {User} from "../models/users/User";
+import { Tenant } from "../models/platform/Tenant";
+import { User } from "../models/users/User";
 import { generateAndSendOtp } from "./otp.service";
 import bcrypt from "bcrypt";
-import {OtpToken} from "../models/common/OtpToken";
+import { OtpToken } from "../models/common/OtpToken";
 import { signJwt } from "../utils/jwt";
 
 export const registerTenantAdmin = async ({
@@ -86,7 +86,10 @@ export const verifyOtpAndLogin = async (email: string, otp: string) => {
 /**
  * Get current user with tenant information
  */
-export const getCurrentUser = async (userId: string, tenantId: string | null) => {
+export const getCurrentUser = async (
+  userId: string,
+  tenantId: string | null,
+) => {
   const user = await User.findById(userId).lean();
   if (!user) throw new Error("User not found");
 
@@ -111,4 +114,3 @@ export const getCurrentUser = async (userId: string, tenantId: string | null) =>
     subscriptionStatus,
   };
 };
-
