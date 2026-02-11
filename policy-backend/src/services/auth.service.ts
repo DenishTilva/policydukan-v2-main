@@ -9,10 +9,12 @@ export const registerTenantAdmin = async ({
   name,
   email,
   mobile,
+  subdomain,
 }: {
   name: string;
   email: string;
   mobile: string;
+  subdomain: string;
 }) => {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -21,6 +23,7 @@ export const registerTenantAdmin = async ({
 
   const tenant = await Tenant.create({
     name,
+    subdomain,
     contactEmail: email,
     subscriptionStatus: "trial",
   });
@@ -29,12 +32,22 @@ export const registerTenantAdmin = async ({
     tenantId: tenant._id,
     name,
     email,
-    mobile,
     role: "admin",
     status: "active",
+    passwordHash: bcrypt.hashSync("otp-based-auth", 10), // OTP-based, dummy hash
   });
 
-  await generateAndSendOtp(user._id.toString(), email, name, "register");
+  const otp = await generateAndSendOtp(
+    user._id.toString(),
+    email,
+    name,
+    "register",
+  );
+
+  // Return OTP in dev mode for testing
+  if (process.env.NODE_ENV === "development") {
+    return { otp };
+  }
 };
 
 export const requestLoginOtp = async (email: string) => {
@@ -43,7 +56,17 @@ export const requestLoginOtp = async (email: string) => {
     throw new Error("User not found");
   }
 
-  await generateAndSendOtp(user._id.toString(), user.email, user.name, "login");
+  const otp = await generateAndSendOtp(
+    user._id.toString(),
+    user.email,
+    user.name,
+    "login",
+  );
+
+  // Return OTP in dev mode for testing
+  if (process.env.NODE_ENV === "development") {
+    return { otp };
+  }
 };
 
 export const verifyOtpAndLogin = async (email: string, otp: string) => {

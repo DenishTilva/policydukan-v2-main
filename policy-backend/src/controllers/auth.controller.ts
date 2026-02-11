@@ -7,13 +7,19 @@ import { getCurrentUser } from "../services/auth.service";
 
 export const register = async (req: any, res: Response) => {
   try {
-    const { name, email, mobile } = req.body;
+    const { name, email, mobile, subdomain } = req.body;
 
-    await registerTenantAdmin({ name, email, mobile });
+    const result = await registerTenantAdmin({
+      name,
+      email,
+      mobile,
+      subdomain,
+    });
 
     res.status(201).json({
       success: true,
       message: "OTP sent to registered email",
+      ...(result && { otp: result.otp }), // Include OTP in dev mode
     });
   } catch (error: any) {
     res.status(400).json({
@@ -27,11 +33,12 @@ export const requestOtp = async (req: any, res: Response) => {
   try {
     const { email } = req.body;
 
-    await requestLoginOtp(email);
+    const result = await requestLoginOtp(email);
 
     res.json({
       success: true,
       message: "OTP sent to registered email",
+      ...(result && { otp: result.otp }), // Include OTP in dev mode
     });
   } catch (error: any) {
     res.status(400).json({
