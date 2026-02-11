@@ -67,9 +67,9 @@ export const verifyOtpAndLogin = async (email: string, otp: string) => {
   await OtpToken.deleteMany({ userId: user._id });
 
   const token = signJwt({
-    userId: user._id,
+    userId: user._id.toString(),
     role: user.role,
-    tenantId: user.tenantId || null,
+    tenantId: user.tenantId ? user.tenantId.toString() : null,
   });
 
   return {
@@ -80,6 +80,35 @@ export const verifyOtpAndLogin = async (email: string, otp: string) => {
       role: user.role,
       tenantId: user.tenantId,
     },
+  };
+};
+
+/**
+ * Get current user with tenant information
+ */
+export const getCurrentUser = async (userId: string, tenantId: string | null) => {
+  const user = await User.findById(userId).lean();
+  if (!user) throw new Error("User not found");
+
+  let tenantName = null;
+  let subscriptionStatus = null;
+
+  if (tenantId) {
+    const tenant = await Tenant.findById(tenantId).lean();
+    if (tenant) {
+      tenantName = tenant.name;
+      subscriptionStatus = tenant.subscriptionStatus;
+    }
+  }
+
+  return {
+    id: user._id.toString(),
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    tenantId: user.tenantId ? user.tenantId.toString() : null,
+    tenantName,
+    subscriptionStatus,
   };
 };
 

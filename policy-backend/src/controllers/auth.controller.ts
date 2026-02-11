@@ -1,9 +1,11 @@
-import { Request, Response } from "express";
+import { Response } from "express";
+import { AuthRequest } from "../middlewares/auth.middleware";
 import { registerTenantAdmin } from "../services/auth.service";
 import { requestLoginOtp } from "../services/auth.service";
 import { verifyOtpAndLogin } from "../services/auth.service";
+import { getCurrentUser } from "../services/auth.service";
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: any, res: Response) => {
   try {
     const { name, email, mobile } = req.body;
 
@@ -21,7 +23,7 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const requestOtp = async (req: Request, res: Response) => {
+export const requestOtp = async (req: any, res: Response) => {
   try {
     const { email } = req.body;
 
@@ -39,7 +41,7 @@ export const requestOtp = async (req: Request, res: Response) => {
   }
 };
 
-export const verifyOtp = async (req: Request, res: Response) => {
+export const verifyOtp = async (req: any, res: Response) => {
   try {
     const { email, otp } = req.body;
 
@@ -53,6 +55,36 @@ export const verifyOtp = async (req: Request, res: Response) => {
     res.status(401).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+/**
+ * GET /api/v1/auth/me
+ * Get current authenticated user
+ */
+export const me = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.userId;
+    const tenantId = req.user?.tenantId || null;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const user = await getCurrentUser(userId, tenantId);
+
+    res.json({
+      success: true,
+      data: user,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch user",
     });
   }
 };
