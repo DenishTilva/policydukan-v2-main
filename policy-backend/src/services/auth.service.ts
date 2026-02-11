@@ -9,18 +9,18 @@ export const registerTenantAdmin = async ({
   name,
   email,
   mobile,
-  subdomain,
 }: {
   name: string;
   email: string;
   mobile: string;
-  subdomain: string;
 }) => {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new Error("User already exists");
   }
 
+  // Create tenant with auto-generated subdomain
+  const subdomain = `tenant-${Date.now()}`;
   const tenant = await Tenant.create({
     name,
     subdomain,
@@ -28,26 +28,18 @@ export const registerTenantAdmin = async ({
     subscriptionStatus: "trial",
   });
 
+  // Create user - OTP will be sent during login
   const user = await User.create({
     tenantId: tenant._id,
     name,
     email,
+    mobile,
     role: "admin",
     status: "active",
     passwordHash: bcrypt.hashSync("otp-based-auth", 10), // OTP-based, dummy hash
   });
 
-  const otp = await generateAndSendOtp(
-    user._id.toString(),
-    email,
-    name,
-    "register",
-  );
-
-  // Return OTP in dev mode for testing
-  if (process.env.NODE_ENV === "development") {
-    return { otp };
-  }
+  return { userId: user._id, tenantId: tenant._id };
 };
 
 export const requestLoginOtp = async (email: string) => {

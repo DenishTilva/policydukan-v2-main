@@ -19,30 +19,30 @@ const otp_service_1 = require("./otp.service");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const OtpToken_1 = require("../models/common/OtpToken");
 const jwt_1 = require("../utils/jwt");
-const registerTenantAdmin = (_a) => __awaiter(void 0, [_a], void 0, function* ({ name, email, mobile, subdomain, }) {
+const registerTenantAdmin = (_a) => __awaiter(void 0, [_a], void 0, function* ({ name, email, mobile, }) {
     const existingUser = yield User_1.User.findOne({ email });
     if (existingUser) {
         throw new Error("User already exists");
     }
+    // Create tenant with auto-generated subdomain
+    const subdomain = `tenant-${Date.now()}`;
     const tenant = yield Tenant_1.Tenant.create({
         name,
         subdomain,
         contactEmail: email,
         subscriptionStatus: "trial",
     });
+    // Create user - OTP will be sent during login
     const user = yield User_1.User.create({
         tenantId: tenant._id,
         name,
         email,
+        mobile,
         role: "admin",
         status: "active",
         passwordHash: bcrypt_1.default.hashSync("otp-based-auth", 10), // OTP-based, dummy hash
     });
-    const otp = yield (0, otp_service_1.generateAndSendOtp)(user._id.toString(), email, name, "register");
-    // Return OTP in dev mode for testing
-    if (process.env.NODE_ENV === "development") {
-        return { otp };
-    }
+    return { userId: user._id, tenantId: tenant._id };
 });
 exports.registerTenantAdmin = registerTenantAdmin;
 const requestLoginOtp = (email) => __awaiter(void 0, void 0, void 0, function* () {

@@ -18,7 +18,6 @@ export default function Signup() {
     lastName: "",
     email: "",
     mobile: "",
-    subdomain: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +30,6 @@ export default function Signup() {
       lastName: "lastName",
       signupEmail: "email",
       phone: "mobile",
-      subdomain: "subdomain",
     };
     const fieldName = fieldMap[id] || id;
     setFormData((prev) => ({
@@ -45,12 +43,7 @@ export default function Signup() {
     setError(null);
 
     // Validation
-    if (
-      !formData.firstName ||
-      !formData.email ||
-      !formData.mobile ||
-      !formData.subdomain
-    ) {
+    if (!formData.firstName || !formData.email || !formData.mobile) {
       setError("Please fill all required fields");
       return;
     }
@@ -67,12 +60,11 @@ export default function Signup() {
         name: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
         mobile: formData.mobile,
-        subdomain: formData.subdomain,
       });
 
       toast({
         title: "Success",
-        description: "OTP sent to your email. Please check your inbox.",
+        description: "Account created successfully. Please login to continue.",
       });
 
       // Redirect to login with email pre-filled
@@ -232,23 +224,6 @@ export default function Signup() {
                 required
                 disabled={loading}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="subdomain">Company Subdomain *</Label>
-              <Input
-                id="subdomain"
-                type="text"
-                placeholder="mycompany"
-                className="h-11"
-                value={formData.subdomain}
-                onChange={handleChange}
-                required
-                disabled={loading}
-              />
-              <p className="text-xs text-muted-foreground">
-                Your unique company identifier (e.g., mycompany.policydukan.com)
-              </p>
             </div>
 
             <div className="flex items-start gap-3 py-2">

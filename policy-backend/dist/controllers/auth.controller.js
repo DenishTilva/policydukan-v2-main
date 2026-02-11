@@ -16,9 +16,24 @@ const auth_service_3 = require("../services/auth.service");
 const auth_service_4 = require("../services/auth.service");
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { name, email, mobile, subdomain } = req.body;
-        const result = yield (0, auth_service_1.registerTenantAdmin)({ name, email, mobile, subdomain });
-        res.status(201).json(Object.assign({ success: true, message: "OTP sent to registered email" }, (result && { otp: result.otp })));
+        const { name, email, mobile } = req.body;
+        // Validate required fields
+        if (!name || !email || !mobile) {
+            return res.status(400).json({
+                success: false,
+                message: "Name, email, and mobile are required",
+            });
+        }
+        const result = yield (0, auth_service_1.registerTenantAdmin)({
+            name,
+            email,
+            mobile,
+        });
+        res.status(201).json({
+            success: true,
+            message: "Account created successfully. Please login to continue.",
+            data: result,
+        });
     }
     catch (error) {
         res.status(400).json({

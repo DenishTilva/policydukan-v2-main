@@ -29,6 +29,7 @@ const getUserProfile = (userId, tenantId) => __awaiter(void 0, void 0, void 0, f
         id: user._id,
         name: user.name,
         email: user.email,
+        mobile: user.mobile || "",
         role: user.role,
         status: user.status,
         code: user.code,
@@ -44,6 +45,9 @@ const updateUserProfile = (userId, tenantId, data) => __awaiter(void 0, void 0, 
     if (data.name) {
         updateData.name = data.name;
     }
+    if (data.mobile) {
+        updateData.mobile = data.mobile;
+    }
     const user = yield User_1.User.findOneAndUpdate({
         _id: userId,
         tenantId: new mongoose_1.default.Types.ObjectId(tenantId),
@@ -54,6 +58,7 @@ const updateUserProfile = (userId, tenantId, data) => __awaiter(void 0, void 0, 
         id: user._id,
         name: user.name,
         email: user.email,
+        mobile: user.mobile || "",
         role: user.role,
         status: user.status,
         code: user.code,

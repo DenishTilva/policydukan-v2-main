@@ -16,6 +16,7 @@ export const getUserProfile = async (userId: string, tenantId: string) => {
     id: user._id,
     name: user.name,
     email: user.email,
+    mobile: user.mobile || "",
     role: user.role,
     status: user.status,
     code: user.code,
@@ -39,6 +40,9 @@ export const updateUserProfile = async (
   if (data.name) {
     updateData.name = data.name;
   }
+  if (data.mobile) {
+    updateData.mobile = data.mobile;
+  }
 
   const user = await User.findOneAndUpdate(
     {
@@ -55,6 +59,7 @@ export const updateUserProfile = async (
     id: user._id,
     name: user.name,
     email: user.email,
+    mobile: user.mobile || "",
     role: user.role,
     status: user.status,
     code: user.code,

@@ -7,19 +7,26 @@ import { getCurrentUser } from "../services/auth.service";
 
 export const register = async (req: any, res: Response) => {
   try {
-    const { name, email, mobile, subdomain } = req.body;
+    const { name, email, mobile } = req.body;
+
+    // Validate required fields
+    if (!name || !email || !mobile) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email, and mobile are required",
+      });
+    }
 
     const result = await registerTenantAdmin({
       name,
       email,
       mobile,
-      subdomain,
     });
 
     res.status(201).json({
       success: true,
-      message: "OTP sent to registered email",
-      ...(result && { otp: result.otp }), // Include OTP in dev mode
+      message: "Account created successfully. Please login to continue.",
+      data: result,
     });
   } catch (error: any) {
     res.status(400).json({

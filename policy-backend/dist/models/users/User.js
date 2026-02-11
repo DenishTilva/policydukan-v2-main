@@ -36,22 +36,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const UserSchema = new mongoose_1.Schema({
-    tenantId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Tenant', required: true, index: true },
+    tenantId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: "Tenant",
+        required: true,
+        index: true,
+    },
     email: { type: String, required: true },
     passwordHash: { type: String, required: true },
     name: { type: String, required: true },
+    mobile: { type: String },
     role: {
         type: String,
-        enum: ['admin', 'staff', 'manager', 'agent'],
-        required: true
+        enum: ["admin", "staff", "manager", "agent"],
+        required: true,
     },
     code: { type: String },
-    reportingManagerId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'User' },
-    status: { type: String, enum: ['active', 'inactive'], default: 'active' },
-    permissions: [{ type: String }]
+    reportingManagerId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User" },
+    status: { type: String, enum: ["active", "inactive"], default: "active" },
+    permissions: [{ type: String }],
 }, {
-    timestamps: true
+    timestamps: true,
 });
 // Compound Unique Index: Email must be unique within a Tenant
 UserSchema.index({ tenantId: 1, email: 1 }, { unique: true });
-exports.User = mongoose_1.default.model('User', UserSchema);
+exports.User = mongoose_1.default.model("User", UserSchema);
