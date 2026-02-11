@@ -7,9 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Shield, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 export default function Login() {
-  const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,43 +93,6 @@ export default function Login() {
                 className="h-11"
                 required
               />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link 
-                  to="/forgot-password" 
-                  className="text-sm text-primary hover:text-primary-hover transition-colors"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-11 pr-10"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Checkbox id="remember" />
-              <label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer">
-                Keep me signed in for 30 days
-              </label>
             </div>
 
             <Button type="submit" size="lg" className="w-full gap-2">

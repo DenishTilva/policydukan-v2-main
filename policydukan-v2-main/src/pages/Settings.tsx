@@ -83,46 +83,12 @@
                      <Label>Mobile</Label>
                      <Input defaultValue="+91 9876543210" />
                    </div>
-                   <div className="space-y-2">
-                     <Label>Designation</Label>
-                     <Input defaultValue="Insurance Agent" />
-                   </div>
                  </div>
  
                  <div className="flex justify-end">
                    <Button>
                      <Save className="w-4 h-4 mr-2" />
                      Save Changes
-                   </Button>
-                 </div>
-               </CardContent>
-             </Card>
- 
-             {/* Password Change */}
-             <Card className="mt-6">
-               <CardHeader>
-                 <CardTitle>Change Password</CardTitle>
-                 <CardDescription>Update your account password</CardDescription>
-               </CardHeader>
-               <CardContent className="space-y-4">
-                 <div className="grid md:grid-cols-3 gap-4">
-                   <div className="space-y-2">
-                     <Label>Current Password</Label>
-                     <Input type="password" placeholder="••••••••" />
-                   </div>
-                   <div className="space-y-2">
-                     <Label>New Password</Label>
-                     <Input type="password" placeholder="••••••••" />
-                   </div>
-                   <div className="space-y-2">
-                     <Label>Confirm New Password</Label>
-                     <Input type="password" placeholder="••••••••" />
-                   </div>
-                 </div>
-                 <div className="flex justify-end">
-                   <Button variant="outline">
-                     <Lock className="w-4 h-4 mr-2" />
-                     Update Password
                    </Button>
                  </div>
                </CardContent>

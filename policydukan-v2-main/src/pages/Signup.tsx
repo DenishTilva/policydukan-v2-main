@@ -7,7 +7,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Shield, Eye, EyeOff, ArrowRight, Building2 } from 'lucide-react';
 
 export default function Signup() {
-  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,14 +78,6 @@ export default function Signup() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="agency">Agency / Company Name</Label>
-              <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input id="agency" placeholder="Kumar Insurance Agency" className="h-11 pl-10" required />
-              </div>
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="signupEmail">Email Address</Label>
               <Input id="signupEmail" type="email" placeholder="you@company.com" className="h-11" required />
             </div>
@@ -94,23 +85,6 @@ export default function Signup() {
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
               <Input id="phone" type="tel" placeholder="+91 98765 43210" className="h-11" required />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="signupPassword">Password</Label>
-              <div className="relative">
-                <Input id="signupPassword" type={showPassword ? 'text' : 'password'} placeholder="Min 8 characters" className="h-11 pr-10" required />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <Checkbox id="terms" className="mt-0.5" />
-              <label htmlFor="terms" className="text-sm text-muted-foreground cursor-pointer">
-                I agree to the <a href="#" className="text-primary hover:underline">Terms of Service</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a>
-              </label>
             </div>
 
             <Button type="submit" size="lg" className="w-full gap-2">
