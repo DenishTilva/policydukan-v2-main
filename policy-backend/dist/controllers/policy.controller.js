@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addPolicy = void 0;
+exports.deletePolicyHandler = exports.updatePolicyHandler = exports.listPolicies = exports.addPolicy = void 0;
 const policy_service_1 = require("../services/policy.service");
 /**
  * POST /api/v1/policies
@@ -79,3 +79,122 @@ const addPolicy = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.addPolicy = addPolicy;
+/**
+ * GET /api/v1/policies
+ * Get all policies for the tenant with pagination
+ */
+const listPolicies = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const tenantId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.tenantId;
+        if (!tenantId) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized",
+            });
+        }
+        // Get query parameters
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || "";
+        const status = req.query.status || "";
+        const result = yield (0, policy_service_1.getPolicies)(tenantId, {
+            page,
+            limit,
+            search,
+            status,
+        });
+        res.json({
+            success: true,
+            data: result.policies,
+            pagination: {
+                total: result.total,
+                page,
+                limit,
+                pages: Math.ceil(result.total / limit),
+            },
+        });
+    }
+    catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message || "Failed to fetch policies",
+        });
+    }
+});
+exports.listPolicies = listPolicies;
+/**
+ * PUT /api/v1/policies/:id
+ * Update a policy
+ */
+const updatePolicyHandler = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const tenantId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.tenantId;
+        const { id } = req.params;
+        const { status, extraAttributes } = req.body;
+        if (!tenantId) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized",
+            });
+        }
+        const updatedPolicy = yield (0, policy_service_1.updatePolicy)(tenantId, id, {
+            status,
+            extraAttributes,
+        });
+        res.json({
+            success: true,
+            message: "Policy updated successfully",
+            data: updatedPolicy,
+        });
+    }
+    catch (error) {
+        if (error.message.includes("not found")) {
+            return res.status(404).json({
+                success: false,
+                message: error.message,
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: error.message || "Failed to update policy",
+        });
+    }
+});
+exports.updatePolicyHandler = updatePolicyHandler;
+/**
+ * DELETE /api/v1/policies/:id
+ * Delete a policy
+ */
+const deletePolicyHandler = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const tenantId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.tenantId;
+        const { id } = req.params;
+        if (!tenantId) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized",
+            });
+        }
+        yield (0, policy_service_1.deletePolicy)(tenantId, id);
+        res.json({
+            success: true,
+            message: "Policy deleted successfully",
+        });
+    }
+    catch (error) {
+        if (error.message.includes("not found")) {
+            return res.status(404).json({
+                success: false,
+                message: error.message,
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: error.message || "Failed to delete policy",
+        });
+    }
+});
+exports.deletePolicyHandler = deletePolicyHandler;

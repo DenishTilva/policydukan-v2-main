@@ -16,9 +16,12 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const app_1 = __importDefault(require("./app"));
 const database_1 = require("./config/database");
+const seed_master_data_1 = require("./scripts/seed-master-data");
 const PORT = process.env.PORT || 5000;
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, database_1.connectDB)();
+    // Seed master data if not already present
+    yield (0, seed_master_data_1.seedMasterData)();
     app_1.default.listen(PORT, () => {
         console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
     });

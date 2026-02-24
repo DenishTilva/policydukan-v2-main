@@ -18,6 +18,8 @@ import { PremiumBreakdown } from "@/components/policies/PremiumBreakdown";
 import { PaymentSection } from "@/components/policies/PaymentSection";
 import { DocumentUpload } from "@/components/policies/DocumentUpload";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import api from "@/utils/api";
 import {
   FileText,
   ArrowLeft,
@@ -26,7 +28,11 @@ import {
   Building2,
   Car,
   Shield,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AxiosError } from "axios";
 
 const insuranceCompanies = [
   "HDFC ERGO",
@@ -50,13 +56,29 @@ const policyTypes = [
   { value: "other", label: "Other", icon: FileText },
 ];
 
-const vehicleTypes = ["Car", "Two Wheeler", "Commercial", "Truck", "Bus", "Other"];
+const vehicleTypes = [
+  "Car",
+  "Two Wheeler",
+  "Commercial",
+  "Truck",
+  "Bus",
+  "Other",
+];
 
 export default function AddPolicy() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const [customerId, setCustomerId] = useState("");
+  const [customerData, setCustomerData] = useState<{
+    name: string;
+    mobile: string;
+    email?: string;
+  } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [policyDetails, setPolicyDetails] = useState({
     policyNumber: "",
     company: "",
@@ -95,16 +117,17 @@ export default function AddPolicy() {
 
   const handlePolicyChange = (
     field: keyof typeof policyDetails,
-    value: string
+    value: string,
   ) => {
     setPolicyDetails({ ...policyDetails, [field]: value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
     // Basic validation
-    if (!customerId) {
+    if (!customerId || !customerData) {
       toast({
         title: "Validation Error",
         description: "Please select or add a customer",
@@ -113,7 +136,13 @@ export default function AddPolicy() {
       return;
     }
 
-    if (!policyDetails.policyNumber || !policyDetails.company) {
+    if (
+      !policyDetails.policyNumber ||
+      !policyDetails.company ||
+      !policyDetails.issueDate ||
+      !policyDetails.inceptionDate ||
+      !policyDetails.expiryDate
+    ) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required policy details",
@@ -122,13 +151,76 @@ export default function AddPolicy() {
       return;
     }
 
-    // In real app, save to database
-    toast({
-      title: "Policy Created!",
-      description: `Policy ${policyDetails.policyNumber} has been created successfully.`,
-    });
+    if (
+      !premiumValues.netPremium ||
+      !premiumValues.gst ||
+      !premiumValues.grossPremium
+    ) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in premium details",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    navigate("/policies");
+    setLoading(true);
+
+    try {
+      const payload = {
+        policyNumber: policyDetails.policyNumber,
+        insurerId: policyDetails.company, // Using company name as insurerId
+        policyTypeId: policyDetails.policyType, // Using policy type as policyTypeId
+        issueDate: policyDetails.issueDate,
+        inceptionDate: policyDetails.inceptionDate,
+        expiryDate: policyDetails.expiryDate,
+        customer: {
+          firstName: customerData.name, // Use customer name instead of ID
+          phone: customerData.mobile, // Use customer mobile
+        },
+        vehicleDetails: {
+          vehicleType: policyDetails.vehicleType,
+          vehicleNumber: policyDetails.vehicleNumber,
+          make: policyDetails.make,
+          model: policyDetails.model,
+        },
+        premiumDetails: {
+          netPremium: parseFloat(premiumValues.netPremium),
+          gstAmount: parseFloat(premiumValues.gst),
+          grossPremium: parseFloat(premiumValues.grossPremium),
+        },
+        extraAttributes: {
+          ncb: policyDetails.ncb,
+          remarks: policyDetails.remarks,
+        },
+      };
+
+      const response = await api.post("/policies", payload);
+
+      if (response.data.success) {
+        toast({
+          title: "Success",
+          description: `Policy ${policyDetails.policyNumber} has been created successfully.`,
+        });
+
+        // Redirect to policies list after successful creation
+        setTimeout(() => {
+          navigate("/policies");
+        }, 1500);
+      }
+    } catch (err) {
+      const axiosError = err as AxiosError<{ message: string }>;
+      const message =
+        axiosError.response?.data?.message || "Failed to create policy";
+      setError(message);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: message,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -154,17 +246,38 @@ export default function AddPolicy() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate("/policies")}>
+            <Button
+              variant="outline"
+              onClick={() => navigate("/policies")}
+              disabled={loading}
+            >
               Cancel
             </Button>
-            <Button onClick={handleSubmit}>
-              <Save className="h-4 w-4 mr-2" />
-              Save Policy
+            <Button onClick={handleSubmit} disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Policy
+                </>
+              )}
             </Button>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Error Alert */}
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Main Details */}
             <div className="lg:col-span-2 space-y-6">
@@ -181,7 +294,16 @@ export default function AddPolicy() {
                     <Label>Select Customer *</Label>
                     <CustomerSearch
                       value={customerId}
-                      onChange={(id) => setCustomerId(id)}
+                      onChange={(id, customer) => {
+                        setCustomerId(id);
+                        if (customer) {
+                          setCustomerData({
+                            name: customer.name,
+                            mobile: customer.mobile,
+                            email: customer.email,
+                          });
+                        }
+                      }}
                     />
                   </div>
                 </CardContent>
@@ -314,7 +436,9 @@ export default function AddPolicy() {
                   <div className="pt-4 border-t">
                     <div className="flex items-center gap-2 mb-4">
                       <Calendar className="h-4 w-4 text-primary" />
-                      <span className="font-medium text-sm">Important Dates</span>
+                      <span className="font-medium text-sm">
+                        Important Dates
+                      </span>
                     </div>
                     <div className="grid grid-cols-3 gap-4">
                       <div className="space-y-2">

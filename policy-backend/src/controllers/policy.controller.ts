@@ -1,6 +1,11 @@
 import { Response } from "express";
 import { AuthRequest } from "../middlewares/auth.middleware";
-import { createPolicy } from "../services/policy.service";
+import {
+  createPolicy,
+  getPolicies,
+  updatePolicy,
+  deletePolicy,
+} from "../services/policy.service";
 
 /**
  * POST /api/v1/policies
@@ -85,6 +90,131 @@ export const addPolicy = async (req: AuthRequest, res: Response) => {
     res.status(500).json({
       success: false,
       message: error.message || "Failed to create policy",
+    });
+  }
+};
+
+/**
+ * GET /api/v1/policies
+ * Get all policies for the tenant with pagination
+ */
+export const listPolicies = async (req: AuthRequest, res: Response) => {
+  try {
+    const tenantId = req.user?.tenantId;
+
+    if (!tenantId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    // Get query parameters
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = (req.query.search as string) || "";
+    const status = (req.query.status as string) || "";
+
+    const result = await getPolicies(tenantId, {
+      page,
+      limit,
+      search,
+      status,
+    });
+
+    res.json({
+      success: true,
+      data: result.policies,
+      pagination: {
+        total: result.total,
+        page,
+        limit,
+        pages: Math.ceil(result.total / limit),
+      },
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch policies",
+    });
+  }
+};
+
+/**
+ * PUT /api/v1/policies/:id
+ * Update a policy
+ */
+export const updatePolicyHandler = async (req: AuthRequest, res: Response) => {
+  try {
+    const tenantId = req.user?.tenantId;
+    const { id } = req.params;
+    const { status, extraAttributes } = req.body;
+
+    if (!tenantId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const updatedPolicy = await updatePolicy(tenantId, id, {
+      status,
+      extraAttributes,
+    });
+
+    res.json({
+      success: true,
+      message: "Policy updated successfully",
+      data: updatedPolicy,
+    });
+  } catch (error: any) {
+    if (error.message.includes("not found")) {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to update policy",
+    });
+  }
+};
+
+/**
+ * DELETE /api/v1/policies/:id
+ * Delete a policy
+ */
+export const deletePolicyHandler = async (req: AuthRequest, res: Response) => {
+  try {
+    const tenantId = req.user?.tenantId;
+    const { id } = req.params;
+
+    if (!tenantId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    await deletePolicy(tenantId, id);
+
+    res.json({
+      success: true,
+      message: "Policy deleted successfully",
+    });
+  } catch (error: any) {
+    if (error.message.includes("not found")) {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to delete policy",
     });
   }
 };
